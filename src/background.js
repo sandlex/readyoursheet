@@ -64,6 +64,22 @@ async function guard(tabId, url) {
   chrome.tabs.update(tabId, { url: target }).catch(() => {});
 }
 
+// Debug handle for the service worker console — `await rys.why('https://youtube.com/')`
+// prints the exact verdict and the state behind it. Answers "why is this
+// blocked" without guessing.
+globalThis.rys = {
+  async why(url) {
+    const [verdict, settings, state] = await Promise.all([
+      evaluate(url),
+      getSettings(),
+      chrome.storage.local.get(['settings', 'pausedUntil', 'snoozes', 'allowances']),
+    ]);
+    return { verdict, settings, legacyLocalSettings: state.settings, local: state };
+  },
+  evaluate,
+  getSettings,
+};
+
 chrome.webNavigation.onBeforeNavigate.addListener((d) => {
   if (d.frameId === 0) guard(d.tabId, d.url);
 });

@@ -130,6 +130,7 @@ const enabled = document.getElementById('enabled');
 enabled.checked = settings.enabled;
 enabled.addEventListener('change', async () => {
   settings = await setSettings({ enabled: enabled.checked });
+  flash('Saved.');
   renderGate();
 });
 
