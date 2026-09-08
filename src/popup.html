@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      body { width: 300px; padding: 16px; }
+      h1 { font-size: 15px; margin-bottom: 2px; }
+      .stats { margin: 14px 0 12px; }
+      .stat { flex-basis: 60px; padding: 8px 10px; }
+      .stat b { font-size: 19px; }
+      #access { margin: 0 0 12px; }
+      .warn { color: var(--accent); margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1 id="status">…</h1>
+    <p class="small muted" id="detail"></p>
+    <div class="stats" id="stats"></div>
+    <div id="access" hidden>
+      <p class="small warn" id="access-text"></p>
+      <button id="grant" class="primary">Grant access</button>
+    </div>
+    <div class="row">
+      <button id="pause">Pause 1h</button>
+      <button id="resume" hidden>Resume</button>
+      <button id="options">Settings</button>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

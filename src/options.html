@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Read Your Sh*t — Settings</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      body { display: flex; justify-content: center; padding: 40px 24px 80px; }
+      main { width: 100%; max-width: 520px; }
+      .site { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .site:last-child { border-bottom: 0; }
+      .site .name { flex: 1; }
+      .warn { color: var(--accent); font-size: 12px; }
+      .chip { font-size: 12px; color: var(--muted); white-space: nowrap; }
+      .chip.hot { color: var(--accent); }
+      #gate { margin: -4px 0 10px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Read Your Sh*t</h1>
+      <p class="lede">Blocks the sites below while your Reading List is growing faster than you read it.</p>
+
+      <label class="field">
+        <span><input type="checkbox" id="enabled" /> Enabled</span>
+      </label>
+
+      <h2>Blocked sites</h2>
+      <p class="small" id="gate"></p>
+      <div class="card" id="sites"></div>
+      <div class="spacer"></div>
+      <form class="row" id="add-form">
+        <input type="text" id="domain" placeholder="youtube.com" style="flex: 1; max-width: none" />
+        <button type="submit" class="primary">Add</button>
+      </form>
+      <p class="small muted" style="margin-top: 8px">
+        Chrome will ask for access to each site — the extension can only see navigations on sites you approve.
+      </p>
+
+      <h2>When to block</h2>
+      <label class="field">
+        <span>Rolling window</span>
+        <input type="number" id="windowDays" min="1" max="90" />
+        <small>Days of history the ratio is measured over.</small>
+      </label>
+      <label class="field">
+        <span>Net growth limit</span>
+        <input type="number" id="netGrowthLimit" min="1" max="200" />
+        <small>Block once (saved − read) over the window reaches this. Lower is stricter.</small>
+      </label>
+      <label class="field">
+        <span>Unread ceiling</span>
+        <input type="number" id="maxUnread" min="0" max="10000" />
+        <small>Also block whenever total unread hits this, regardless of ratio. 0 turns it off.</small>
+      </label>
+
+      <h2>How hard to block</h2>
+      <label class="field">
+        <span>Delay before "Continue anyway"</span>
+        <input type="number" id="delaySeconds" min="0" max="300" />
+        <small>Seconds you have to sit and look at the nag screen.</small>
+      </label>
+      <label class="field">
+        <span>Snooze length</span>
+        <input type="number" id="snoozeMinutes" min="1" max="1440" />
+        <small>Minutes a site stays unblocked after you click through.</small>
+      </label>
+
+      <p class="small muted" id="saved-note" style="min-height: 18px"></p>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
