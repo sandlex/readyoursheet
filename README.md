@@ -214,8 +214,24 @@ If you want to hand it to someone else:
 No build, no dependencies, no watch process. Edit a file, then hit the **reload**
 icon on the extension's card at `chrome://extensions`.
 
-- **Service worker logs** — on the extension card, click the `service worker`
-  link to open its DevTools console. It sleeps when idle; that's normal.
+> **Reload after every change, including a `git pull`.** Nothing hot-reloads. The
+> service worker keeps running the code it was loaded with, so edits appear to
+> have no effect — settings save correctly, and the old worker goes on ignoring
+> them. If a change "doesn't work", reload before debugging anything else.
+
+- **Service worker logs** — on the extension card, click the blue `service
+  worker` link to open a DevTools window scoped to it. This is *not* the console
+  of the `chrome://extensions` page itself, which shows Chrome's own WebUI
+  noise. The worker sleeps when idle; that's normal.
+- **Why is this URL blocked?** In that service worker console:
+
+  ```javascript
+  await rys.why('https://www.youtube.com/')
+  ```
+
+  Returns the gate verdict (`block`, and `why`: `disabled`, `paused`, `snoozed`,
+  `growth`, `ceiling`, `not-listed`, …) along with the settings and local state
+  behind it. Beats inferring the cause from behaviour.
 - **The nag screen** is a regular extension page, so you can inspect it with
   normal DevTools.
 - **Errors** — a red *Errors* button appears on the card if the manifest or the

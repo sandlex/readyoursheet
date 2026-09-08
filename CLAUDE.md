@@ -18,6 +18,17 @@ and rasterizes the icons. Don't reach for npm/vitest; extend `test/cases.js`.
 
 To reload after editing: `chrome://extensions` → reload the extension's card.
 
+**Suspect a stale service worker before anything else.** Nothing hot-reloads,
+including after a `git pull`. The worker keeps running its loaded code, so a
+change looks broken in a very convincing way: the options page saves correctly,
+storage holds the new value, and the old worker ignores it. This has already
+burned one debugging round trip. Ask "did you reload the extension?" first.
+
+To diagnose rather than guess, the service worker console has
+`await rys.why(url)` — it returns the gate verdict plus the settings and local
+state behind it. Note that the console on the `chrome://extensions` *page* is not
+the worker's; the card's blue `service worker` link opens the right one.
+
 ## Design invariants
 
 Deliberate decisions, not accidents. Check before changing:
