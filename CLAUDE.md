@@ -74,6 +74,15 @@ Deliberate decisions, not accidents. Check before changing:
   and on `visibilitychange` and releases the tab when the gate has gone. This is
   why the block decision lives in `lib/gate.js` rather than inline in `guard()`:
   the service worker and the nag screen must answer it identically.
+- **Chrome can only add the *current tab* to the Reading List** (side panel, or
+  right-click a tab). There is no "save this link" for an unopened URL. So you
+  cannot save a blocked site's page while it's blocked — you never get a tab on
+  it. The escape hatch is reached by links saved from mobile and synced, or
+  saved before the gate closed. Test it that way; don't try to save while
+  blocked.
+- **Don't add "Save this for later" to the nag screen.** Saving the blocked URL
+  would make it an unread entry, which the escape hatch then lets straight
+  through — a one-click bypass cheaper than the countdown.
 - **Reading List entries are keyed by exact URL**, query string included. Always
   compare via `canonicalize()` from `lib/url.js`.
 - **Don't screenshot an `.svg` with headless Chrome.** It renders at the root
