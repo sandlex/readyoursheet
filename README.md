@@ -214,10 +214,21 @@ If you want to hand it to someone else:
 No build, no dependencies, no watch process. Edit a file, then hit the **reload**
 icon on the extension's card at `chrome://extensions`.
 
-> **Reload after every change, including a `git pull`.** Nothing hot-reloads. The
-> service worker keeps running the code it was loaded with, so edits appear to
-> have no effect — settings save correctly, and the old worker goes on ignoring
-> them. If a change "doesn't work", reload before debugging anything else.
+Reloading matters differently depending on what you edited:
+
+| You changed | Takes effect |
+| --- | --- |
+| `popup.*`, `options.*`, `blocked.*`, `style.css` | Immediately — extension pages load from disk each time you open them |
+| `lib/*.js` **as used by a page** | Immediately, next time that page opens |
+| `lib/*.js` **as used by the service worker** | Only after reloading the extension |
+| `background.js`, `manifest.json` | Only after reloading the extension |
+
+> **The trap:** a page and the service worker can end up running *different
+> versions of the same module*. Edit `lib/store.js` and the options page picks it
+> up on its next open while the worker keeps the old copy indefinitely. That
+> produces very convincing nonsense — the UI saves correctly, storage holds the
+> new value, and the worker goes on acting as though it didn't. If behaviour and
+> stored state disagree, reload the extension before debugging anything else.
 
 - **Service worker logs** — on the extension card, click the blue `service
   worker` link to open a DevTools window scoped to it. This is *not* the console

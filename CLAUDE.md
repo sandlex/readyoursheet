@@ -18,11 +18,21 @@ and rasterizes the icons. Don't reach for npm/vitest; extend `test/cases.js`.
 
 To reload after editing: `chrome://extensions` → reload the extension's card.
 
-**Suspect a stale service worker before anything else.** Nothing hot-reloads,
-including after a `git pull`. The worker keeps running its loaded code, so a
-change looks broken in a very convincing way: the options page saves correctly,
-storage holds the new value, and the old worker ignores it. This has already
-burned one debugging round trip. Ask "did you reload the extension?" first.
+**Reloading is per-context, and the asymmetry is a trap.** Extension pages
+(popup, options, nag screen) and every module they import are read from disk
+each time the page opens, so edits there are live immediately. The service
+worker and `manifest.json` are not — they keep their loaded code until the
+extension is reloaded, including after a `git pull`.
+
+So a page and the worker can run **different versions of the same `lib/`
+module**. That has already produced one hard-to-read bug: the options page was
+new code writing settings to `storage.sync` while the worker was old code
+reading `storage.local`, so unchecking Enabled saved correctly and changed
+nothing, and `migrateSettings()` — which lives in the worker — hadn't run to
+reconcile them either.
+
+Rule of thumb: if observed behaviour and stored state disagree, suspect a stale
+worker before suspecting the logic. Ask "did you reload the extension?" first.
 
 To diagnose rather than guess, the service worker console has
 `await rys.why(url)` — it returns the gate verdict plus the settings and local
