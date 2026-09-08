@@ -48,6 +48,11 @@ Deliberate decisions, not accidents. Check before changing:
   badge and the popup's Grant access button exist for exactly this.
 - **Blocked sites are SPAs.** `onBeforeNavigate` alone misses clicking through to
   the next video; `onHistoryStateUpdated` is what catches it.
+- **A blocked tab's URL becomes the nag screen**, so it can't retry the site by
+  itself — reloading just re-renders the nag. `blocked.js` re-evaluates on load
+  and on `visibilitychange` and releases the tab when the gate has gone. This is
+  why the block decision lives in `lib/gate.js` rather than inline in `guard()`:
+  the service worker and the nag screen must answer it identically.
 - **Reading List entries are keyed by exact URL**, query string included. Always
   compare via `canonicalize()` from `lib/url.js`.
 - **Don't screenshot an `.svg` with headless Chrome.** It renders at the root

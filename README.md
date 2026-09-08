@@ -75,6 +75,11 @@ When a blocked site is gated, you get a page with:
 - **Continue anyway**, which unlocks after a countdown (15s by default) and then
   snoozes that site for 30 minutes
 
+Once a tab has been sent to the nag screen its URL *is* the nag screen, so
+nothing would send it back on its own. It re-checks whenever you return to the
+tab, and takes you to the site if the reason it was blocked has gone — you
+disabled blocking, hit pause, or caught up on reading.
+
 ### The escape hatch
 
 If five of your saved links are YouTube videos and YouTube is blocked, you'd never

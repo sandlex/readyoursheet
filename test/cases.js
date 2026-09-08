@@ -8,6 +8,7 @@ const v = '?v=' + Date.now();
 const { canonicalize, matchesBlocklist, normalizeDomain, hostMatchesDomain } =
   await import('../src/lib/url.js' + v);
 const { reconcile, metrics, shouldBlock } = await import('../src/lib/backlog.js' + v);
+const { decide, evaluate } = await import('../src/lib/gate.js' + v);
 const {
   getSettings, setSettings, migrateSettings, missingAccess, siteStates, unsnooze, prune, DEFAULTS,
 } = await import('../src/lib/store.js' + v);
@@ -165,6 +166,60 @@ await unsnooze('reddit.com');
 eq('unsnooze clears the snooze', (await siteStates(['reddit.com']))[0].snoozedUntil, 0);
 
 eq('allowed links carry an expiry', states['youtube.com'].allowedLinks.every(l => l.until > now), true);
+
+// ------------------------------------------------- the gate decision itself
+// Regression: unchecking Enabled left already-blocked tabs stuck on the nag
+// screen, because nothing re-evaluated once a tab had been redirected.
+const gateBase = {
+  url: 'https://www.youtube.com/feed',
+  settings: { ...DEFAULTS, enabled: true, blocklist: ['youtube.com'], netGrowthLimit: 3 },
+  stats: { netGrowth: 8, unread: 23, windowDays: 7 },
+  snoozes: {},
+  allowances: {},
+  snapshot: {},
+};
+const at = (over) => decide({ ...gateBase, ...over, settings: { ...gateBase.settings, ...(over.settings ?? {}) } });
+
+eq('blocks when over the limit', at({}).block, true);
+eq('block reports the reason', at({}).why, 'growth');
+eq('unchecking Enabled unblocks', at({ settings: { enabled: false } }).block, false);
+eq('unchecking Enabled says why', at({ settings: { enabled: false } }).why, 'disabled');
+eq('pause unblocks', at({ settings: { pausedUntil: now + 60_000 } }).why, 'paused');
+eq('expired pause still blocks', at({ settings: { pausedUntil: now - 60_000 } }).block, true);
+eq('snooze unblocks', at({ snoozes: { 'youtube.com': now + 60_000 } }).why, 'snoozed');
+eq('expired snooze still blocks', at({ snoozes: { 'youtube.com': now - 60_000 } }).block, true);
+eq('site removed from blocklist', at({ settings: { blocklist: [] } }).why, 'not-listed');
+eq('unlisted site never blocked', at({ url: 'https://example.com/' }).block, false);
+eq('non-http ignored', at({ url: 'chrome://extensions' }).why, 'not-http');
+eq('under the limit unblocks', at({ stats: { netGrowth: 1, unread: 3, windowDays: 7 } }).why, 'under-limit');
+eq('ceiling can still block under limit',
+  at({ stats: { netGrowth: 0, unread: 99, windowDays: 7 }, settings: { maxUnread: 50 } }).why, 'ceiling');
+
+// escape hatch
+const saved = { 'https://youtu.be/K1': { hasBeenRead: false } };
+eq('saved unread link allowed', at({ url: 'https://www.youtube.com/watch?v=K1&t=9', snapshot: saved }).block, false);
+eq('saved link asks for an allowance', at({ url: 'https://www.youtube.com/watch?v=K1', snapshot: saved }).grantAllowance, true);
+eq('already-read saved link is not a hatch',
+  at({ url: 'https://www.youtube.com/watch?v=K1', snapshot: { 'https://youtu.be/K1': { hasBeenRead: true } } }).block, true);
+eq('a different video still blocked', at({ url: 'https://www.youtube.com/watch?v=OTHER', snapshot: saved }).block, true);
+eq('live allowance passes', at({ allowances: { 'https://youtube.com/watch?v=K1': now + 60_000 }, url: 'https://www.youtube.com/watch?v=K1' }).block, false);
+eq('expired allowance blocks', at({ allowances: { 'https://youtube.com/watch?v=K1': now - 60_000 }, url: 'https://www.youtube.com/watch?v=K1' }).block, true);
+
+
+// evaluate() wiring: right storage keys, right settings source. A typo here
+// would silently stop all blocking while every decide() test kept passing.
+local.snoozes = {};
+local.allowances = {};
+await setSettings({ enabled: true, blocklist: ['b.com'], netGrowthLimit: 1, maxUnread: 0, pausedUntil: 0 });
+eq('evaluate blocks using stored state', (await evaluate('https://b.com/page')).block, true);
+await setSettings({ enabled: false });
+eq('evaluate honours stored enabled=false', (await evaluate('https://b.com/page')).why, 'disabled');
+await setSettings({ enabled: true });
+local.snoozes = { 'b.com': now + 60_000 };
+eq('evaluate reads the snoozes key', (await evaluate('https://b.com/page')).why, 'snoozed');
+local.snoozes = {};
+eq('evaluate blocks again once snooze cleared', (await evaluate('https://b.com/page')).block, true);
+
 eq('prune drops expired entries', prune({ a: now - 1, b: now + 10_000 }, now), { b: now + 10_000 });
 
 // ------------------------------------------------------------------ report

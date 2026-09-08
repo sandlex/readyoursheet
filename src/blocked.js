@@ -1,11 +1,39 @@
 import { getSettings, snooze } from './lib/store.js';
 import { metrics } from './lib/backlog.js';
+import { evaluate } from './lib/gate.js';
 import { canonicalize, hostOf, isHttp } from './lib/url.js';
 
 const params = new URLSearchParams(location.search);
 const target = params.get('url') ?? '';
 const domain = params.get('domain') ?? hostOf(target);
 const reason = params.get('reason');
+
+// This tab's URL is now the nag screen, so nothing would ever send it back on
+// its own — turning blocking off, pausing, or catching up would leave it stuck
+// here looking blocked. Re-check whenever the tab is looked at.
+async function releaseIfClear() {
+  if (!isHttp(target)) return;
+  const verdict = await evaluate(target);
+  if (verdict.block) return;
+
+  // If this page and the service worker ever disagreed, releasing would bounce
+  // straight back and loop. Cap it at two attempts per tab per 10s.
+  let recent = [];
+  try {
+    recent = JSON.parse(sessionStorage.getItem('releases') ?? '[]');
+  } catch {}
+  recent = recent.filter((t) => Date.now() - t < 10_000);
+  if (recent.length >= 2) return;
+  try {
+    sessionStorage.setItem('releases', JSON.stringify([...recent, Date.now()]));
+  } catch {}
+
+  location.replace(target);
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) releaseIfClear();
+});
+await releaseIfClear();
 
 const settings = await getSettings();
 const m = await metrics(settings);

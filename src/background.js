@@ -1,6 +1,6 @@
 import { getSettings, migrateSettings, missingAccess } from './lib/store.js';
-import { reconcile, metrics, shouldBlock } from './lib/backlog.js';
-import { canonicalize, matchesBlocklist, isHttp } from './lib/url.js';
+import { reconcile } from './lib/backlog.js';
+import { evaluate } from './lib/gate.js';
 
 const RECONCILE_ALARM = 'reconcile';
 const ESCAPE_HATCH_MINUTES = 60;
@@ -45,43 +45,22 @@ for (const event of ['onEntryAdded', 'onEntryUpdated', 'onEntryRemoved']) {
 }
 
 async function guard(tabId, url) {
-  if (!isHttp(url)) return;
+  const verdict = await evaluate(url);
 
-  const settings = await getSettings();
-  const domain = matchesBlocklist(url, settings.blocklist);
-  if (!domain) return;
-
-  const now = Date.now();
-  if (now < (settings.pausedUntil ?? 0)) return;
-
-  const st = await chrome.storage.local.get(['snoozes', 'allowances', 'snapshot']);
-  const snoozes = st.snoozes ?? {};
-  const allowances = st.allowances ?? {};
-  const snapshot = st.snapshot ?? {};
-
-  if ((snoozes[domain] ?? 0) > now) return;
-
-  const canon = canonicalize(url);
-  if ((allowances[canon] ?? 0) > now) return;
-
-  // Escape hatch: the thing you saved is allowed even when its host is blocked,
-  // but only that exact URL — autoplaying to the next video still gets caught.
-  const isSavedUnread = Object.entries(snapshot).some(
-    ([entryUrl, entry]) => !entry.hasBeenRead && canonicalize(entryUrl) === canon,
-  );
-  if (isSavedUnread) {
-    allowances[canon] = now + ESCAPE_HATCH_MINUTES * 60_000;
+  // Opening something you saved keeps that exact URL reachable for a while, so
+  // autoplaying on to the next video still gets caught.
+  if (verdict.grantAllowance) {
+    const { allowances = {} } = await chrome.storage.local.get('allowances');
+    allowances[verdict.canon] = Date.now() + ESCAPE_HATCH_MINUTES * 60_000;
     await chrome.storage.local.set({ allowances });
     return;
   }
-
-  const verdict = shouldBlock(await metrics(settings), settings);
-  if (!verdict) return;
+  if (!verdict.block) return;
 
   const target =
     chrome.runtime.getURL('src/blocked.html') +
     '?' +
-    new URLSearchParams({ url, domain, reason: verdict.reason });
+    new URLSearchParams({ url, domain: verdict.domain, reason: verdict.why });
   chrome.tabs.update(tabId, { url: target }).catch(() => {});
 }
 
