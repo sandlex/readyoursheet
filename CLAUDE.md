@@ -84,7 +84,15 @@ Deliberate decisions, not accidents. Check before changing:
   would make it an unread entry, which the escape hatch then lets straight
   through — a one-click bypass cheaper than the countdown.
 - **Reading List entries are keyed by exact URL**, query string included. Always
-  compare via `canonicalize()` from `lib/url.js`.
+  compare via `canonicalize()` from `lib/url.js`. It strips `www.`/`m.`/`mobile.`
+  hosts, because a link saved on a phone is `m.youtube.com` while the desktop
+  lands on `www.youtube.com` — that mismatch silently broke the escape hatch
+  once. Note that blocklist *grouping* is subdomain-tolerant while hatch
+  *matching* is exact, so a link can be listed on the nag screen and still be
+  blocked when clicked. That asymmetry is what makes the bug confusing.
+- **The gate asks the Reading List live, not the snapshot.** The snapshot exists
+  for the ledger and can lag a phone sync by a reconcile interval, which would
+  block a link the nag screen is actively offering.
 - **Don't screenshot an `.svg` with headless Chrome.** It renders at the root
   element's width/height then *crops* to `--window-size` rather than scaling.
   `icons/build.sh` goes through an HTML wrapper for this reason.

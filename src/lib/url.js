@@ -20,7 +20,9 @@ export function hostOf(rawUrl) {
 export function canonicalize(rawUrl) {
   try {
     const u = new URL(rawUrl);
-    u.hostname = u.hostname.toLowerCase().replace(/^www\./, '');
+    // Mobile hosts matter here: links saved on a phone arrive as m.youtube.com
+    // and have to match the www URL the desktop lands on.
+    u.hostname = u.hostname.toLowerCase().replace(/^(www|m|mobile)\./, '');
     u.hash = '';
 
     if (u.hostname === 'youtu.be') {

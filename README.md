@@ -90,8 +90,10 @@ be able to clear them. So:
 - That allowance is scoped to that **exact URL** and expires after an hour. When
   the video ends and autoplay moves you to the next one, you get the nag screen
   again.
-- `youtu.be/x` and `youtube.com/watch?v=x` are treated as the same link, and
-  tracking params and timestamps are ignored when matching.
+- `youtu.be/x`, `m.youtube.com/watch?v=x` and `www.youtube.com/watch?v=x` are all
+  treated as the same link. Tracking params, timestamps and YouTube's `pp` blob
+  are ignored when matching. The mobile host matters: a video saved on a phone
+  arrives as `m.youtube.com` and has to match the `www` URL the desktop lands on.
 
 ### Settings
 

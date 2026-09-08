@@ -176,7 +176,7 @@ const gateBase = {
   stats: { netGrowth: 8, unread: 23, windowDays: 7 },
   snoozes: {},
   allowances: {},
-  snapshot: {},
+  unreadUrls: [],
 };
 const at = (over) => decide({ ...gateBase, ...over, settings: { ...gateBase.settings, ...(over.settings ?? {}) } });
 
@@ -196,12 +196,12 @@ eq('ceiling can still block under limit',
   at({ stats: { netGrowth: 0, unread: 99, windowDays: 7 }, settings: { maxUnread: 50 } }).why, 'ceiling');
 
 // escape hatch
-const saved = { 'https://youtu.be/K1': { hasBeenRead: false } };
-eq('saved unread link allowed', at({ url: 'https://www.youtube.com/watch?v=K1&t=9', snapshot: saved }).block, false);
-eq('saved link asks for an allowance', at({ url: 'https://www.youtube.com/watch?v=K1', snapshot: saved }).grantAllowance, true);
-eq('already-read saved link is not a hatch',
-  at({ url: 'https://www.youtube.com/watch?v=K1', snapshot: { 'https://youtu.be/K1': { hasBeenRead: true } } }).block, true);
-eq('a different video still blocked', at({ url: 'https://www.youtube.com/watch?v=OTHER', snapshot: saved }).block, true);
+const saved = ['https://youtu.be/K1'];
+eq('saved unread link allowed', at({ url: 'https://www.youtube.com/watch?v=K1&t=9', unreadUrls: saved }).block, false);
+eq('saved link asks for an allowance', at({ url: 'https://www.youtube.com/watch?v=K1', unreadUrls: saved }).grantAllowance, true);
+eq('a read (so absent) saved link is not a hatch',
+  at({ url: 'https://www.youtube.com/watch?v=K1', unreadUrls: [] }).block, true);
+eq('a different video still blocked', at({ url: 'https://www.youtube.com/watch?v=OTHER', unreadUrls: saved }).block, true);
 eq('live allowance passes', at({ allowances: { 'https://youtube.com/watch?v=K1': now + 60_000 }, url: 'https://www.youtube.com/watch?v=K1' }).block, false);
 eq('expired allowance blocks', at({ allowances: { 'https://youtube.com/watch?v=K1': now - 60_000 }, url: 'https://www.youtube.com/watch?v=K1' }).block, true);
 
@@ -219,6 +219,37 @@ local.snoozes = { 'b.com': now + 60_000 };
 eq('evaluate reads the snoozes key', (await evaluate('https://b.com/page')).why, 'snoozed');
 local.snoozes = {};
 eq('evaluate blocks again once snooze cleared', (await evaluate('https://b.com/page')).block, true);
+
+// End-to-end: a phone-saved link must survive the live query, not just decide().
+// The snapshot is deliberately NOT updated here — reconcile lagging a sync must
+// not block a link the nag screen is already offering.
+await setSettings({ blocklist: ['youtube.com'] });
+readingList.entries.push({
+  url: 'https://m.youtube.com/watch?v=PHONE&pp=ugUH', title: 'Saved on phone',
+  hasBeenRead: false, creationTime: now, lastUpdateTime: now,
+});
+const hatch = await evaluate('https://www.youtube.com/watch?app=desktop&v=PHONE&t=15s');
+eq('phone-saved link passes evaluate', hatch.block, false);
+eq('phone-saved link is recognised as the hatch', hatch.why, 'saved-link');
+eq('hatch works before reconcile has run', hatch.grantAllowance, true);
+eq('a different video still blocks', (await evaluate('https://www.youtube.com/watch?v=OTHER')).block, true);
+
+
+// Regression: a video saved on a phone arrives as m.youtube.com but the desktop
+// lands on www.youtube.com, so the escape hatch never matched it.
+eq('mobile and desktop youtube agree',
+  canonicalize('https://m.youtube.com/watch?v=ID&pp=xyz') === canonicalize('https://www.youtube.com/watch?app=desktop&v=ID&t=15s'), true);
+eq('youtu.be matches mobile too',
+  canonicalize('https://youtu.be/ID?si=1') === canonicalize('https://m.youtube.com/watch?v=ID'), true);
+eq('mobile prefix stripped generally', canonicalize('https://m.example.com/a'), 'https://example.com/a');
+eq('mobile. prefix stripped', canonicalize('https://mobile.example.com/a'), 'https://example.com/a');
+eq('a host merely starting with m is untouched', canonicalize('https://medium.com/a'), 'https://medium.com/a');
+eq('phone-saved link opens on desktop',
+  at({ url: 'https://www.youtube.com/watch?app=desktop&v=5Yd&t=15s',
+       unreadUrls: ['https://m.youtube.com/watch?v=5Yd&pp=ugUH'] }).grantAllowance, true);
+eq('the pp param alone never mattered',
+  at({ url: 'https://www.youtube.com/watch?app=desktop&v=5Yd&t=15s',
+       unreadUrls: ['https://www.youtube.com/watch?app=desktop&v=5Yd&t=15s&pp=ugUH'] }).grantAllowance, true);
 
 eq('prune drops expired entries', prune({ a: now - 1, b: now + 10_000 }, now), { b: now + 10_000 });
 
