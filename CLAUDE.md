@@ -1,4 +1,4 @@
-# Read Your Sh*t — working notes
+# Read Your Sheet — working notes
 
 Chrome MV3 extension. Soft-blocks distracting sites while the Chrome Reading
 List backlog is growing faster than it's being read. Personal tool, not a

@@ -1,4 +1,4 @@
-# Read Your Sh*t
+# Read Your Sheet
 
 A Chrome extension that soft-blocks distracting sites while your Reading List is
 growing faster than you read it.
@@ -24,11 +24,11 @@ There is no build step and no dependencies. You load the folder as-is.
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/sandlex/readyourshit.git
+   git clone https://github.com/sandlex/readyoursheet.git
    ```
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode** (toggle, top right).
-4. Click **Load unpacked** and select the `readyourshit` folder — the one
+4. Click **Load unpacked** and select the `readyoursheet` folder — the one
    containing `manifest.json`.
 5. The icon appears in the toolbar. Pin it if you want the numbers at a glance.
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA18OxU2toimHCxcaRdKZyVwT6151fq1sNLLXiEoH+XUrL6Iob02eIyGbGJIMrEFkW5I3g+yvk4HWUUS+9MQdkSMdHl3yRXlau7/IY2P6SH2kpVlIvzWNkhk9NDY6C7kDtEK9fJohkFGDwE1qG0GAm1un89Jr+nBPhiPvIDpW0G2DHStTdTL43BnupuehiQCsSr/6H3H+YCzZI74eaJYkqvFDg8cUJBqSXtNqBzVAPxAUF826w4qCbh2lvfakBfyjlEDVcyN8/4d4PmOOtIQpZAS7sq99lTb28SoKGmon89gh8IBdBx0SwPosygYj1Rwzwsp054ICahFf80DRub+nE1wIDAQAB",
-  "name": "Read Your Sh*t",
+  "name": "Read Your Sheet",
   "version": "0.1.0",
   "description": "Soft-blocks distracting sites when your Chrome Reading List grows faster than you read it.",
   "minimum_chrome_version": "120",
@@ -25,7 +25,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Read Your Sh*t",
+    "default_title": "Read Your Sheet",
     "default_popup": "src/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
