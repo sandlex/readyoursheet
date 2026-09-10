@@ -147,6 +147,28 @@ live in `chrome.storage.sync`, so Chrome replicates them through your account.
 (Requires being signed into Chrome with extension sync enabled. Signed out, sync
 storage still works, it just stays on that machine until you sign in.)
 
+> **This only works because `manifest.json` sets a `key`.** Sync data is bucketed
+> by extension ID, and an unpacked extension's ID is otherwise derived from the
+> folder it was loaded from — so two machines with different paths get different
+> IDs and two entirely separate buckets, and nothing ever syncs. The `key` field
+> pins the ID so both machines land in the same bucket. Verify it worked: the ID
+> on each extension's card at `chrome://extensions` must be identical.
+>
+> The public key in the manifest is what fixes the ID and is safe to commit. The
+> matching private key is only needed to sign a `.crx` and is gitignored.
+
+**What actually moves the data.** `storage.sync.set()` writes locally and hands
+the change straight to Chrome's sync engine — nothing needs to be closed and no
+timer of ours is involved. The other machine is notified by push and fetches,
+so it's near-real-time while the browser is running, falling back to slow polling
+only if push is unavailable.
+
+**Conflicts are last-writer-wins per storage key, with no field-level merge**, and
+every setting lives under a single `settings` key. So if you change the delay on
+one laptop and the blocklist on the other inside the same window, one of those
+edits is lost wholesale rather than the two merging. Splitting the settings into
+one key each would fix it; not done yet.
+
 **Nothing has to trigger the pickup.** Settings are never cached in memory —
 every navigation, popup and nag screen reads storage fresh — so once Chrome has
 replicated a change, the next page load already uses it. Change the blocklist on

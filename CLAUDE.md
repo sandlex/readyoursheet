@@ -63,6 +63,15 @@ Deliberate decisions, not accidents. Check before changing:
 
 ## Gotchas that have already bitten
 
+- **`manifest.json` must keep its `key` field.** It pins the extension ID.
+  Without it an unpacked extension's ID comes from its load path, so every
+  machine gets a different ID and therefore a different `chrome.storage.sync`
+  bucket — sync silently does nothing. Removing or regenerating `key` changes
+  the ID, which orphans all existing storage and requires removing and
+  re-adding the unpacked extension.
+- **Sync conflicts are last-writer-wins per key, and all settings share one
+  key.** Simultaneous edits on two machines lose one side wholesale instead of
+  merging. Splitting `settings` into one key per field would fix it.
 - **Host permissions cannot sync and are per-profile.** A blocklist synced from
   another machine is inert until each site is granted there — and a site without
   permission is silently not blocked, because `webNavigation` never fires. The
