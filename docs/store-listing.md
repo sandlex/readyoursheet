@@ -121,6 +121,22 @@ https://github.com/sandlex/readyoursheet/blob/main/PRIVACY.md
 
 ---
 
+## Published item
+
+| | |
+| --- | --- |
+| Store item ID | `hadmajghlhbpcopcakkcggdmaejnohlc` |
+| Listing URL | https://chromewebstore.google.com/detail/hadmajghlhbpcopcakkcggdmaejnohlc |
+
+The store assigns its own key, so this ID differs from the `ifkne…` one that
+the local unpacked build derives from the `key` in `manifest.json`. They are two
+separate extensions to Chrome, with separate storage and separate sync buckets.
+
+Once the store version is installed, **remove or disable the unpacked copy** —
+otherwise two copies are both gating navigations, and each has its own settings.
+
+The store ID is what the release workflow needs; it's public, not a secret.
+
 ## Submission checklist
 
 - [ ] `./test/run.sh` passes
