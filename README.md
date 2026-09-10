@@ -252,8 +252,23 @@ If you want to hand it to someone else:
   one, but Chrome won't install a `.crx` that didn't come from the Web Store on
   Windows or macOS. It's a dead end for sharing.
 - **Chrome Web Store** is the only clean distribution path. One-time $5 developer
-  fee, and you can publish an **Unlisted** listing so it's link-only rather than
-  public. Note the extension name is censored partly with review in mind.
+  fee at [the developer dashboard](https://chrome.google.com/webstore/devconsole),
+  and you can publish an **Unlisted** listing so it's link-only rather than public.
+
+To build the upload package:
+
+```bash
+./package.sh
+```
+
+It writes `dist/read-your-sheet-<version>.zip` containing only what runs, with
+`manifest.json` at the root and the `key` field stripped — the store rejects a
+first upload that has one, and assigns its own. The script fails the build
+rather than producing a package that would bounce.
+
+Listing copy, permission justifications and the submission checklist live in
+[docs/store-listing.md](docs/store-listing.md); the 1280×800 screenshots and the
+promo tile are generated into `docs/store/` by `./docs/build.sh`.
 
 ---
 

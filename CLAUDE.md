@@ -10,7 +10,12 @@ product. See README.md for install and usage.
 ./test/run.sh        # logic tests, exits non-zero on failure
 ./docs/build.sh      # regenerate README screenshots from staged data
 ./icons/build.sh     # re-rasterize icon PNGs after editing icons/icon.svg
+./package.sh         # build dist/*.zip for Chrome Web Store upload
 ```
+
+`package.sh` strips `key` from the packaged manifest — the store rejects a first
+upload containing one — and refuses to produce a zip if dev files, a `.pem` or a
+stray `key` leak in. Store listing copy is in `docs/store-listing.md`.
 
 There is **no build step, no package.json, and no node on this machine.**
 Headless Chrome is the only JS runtime available — that's what runs the tests

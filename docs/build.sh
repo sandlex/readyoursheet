@@ -31,7 +31,9 @@ cleanup() {
 trap cleanup EXIT
 
 cp -R src "$STAGE/src"
-cp docs/fixture.js docs/measure.js "$STAGE/src/"
+cp docs/fixture.js docs/measure.js docs/store-frame.html "$STAGE/src/"
+cp docs/promo-tile.html "$STAGE/src/"
+mkdir -p "$STAGE/icons" && cp icons/icon128.png "$STAGE/icons/"
 
 python3 - "$STAGE" <<'PY'
 import pathlib, sys
@@ -80,3 +82,26 @@ shoot() { # name  page-with-query  css-width
 shoot nag-screen "blocked.html?url=https%3A%2F%2Fwww.youtube.com%2F&domain=youtube.com&reason=growth" 620
 shoot settings   "options.html" 580
 shoot popup      "popup.html?granted=all" 332
+
+# --- Chrome Web Store assets -------------------------------------------------
+# The listing needs exactly 1280x800 (or 640x400), so the narrow UI is framed
+# and scaled to fill the canvas rather than captured raw.
+mkdir -p "$OUT/store"
+
+framed() { # name  page-with-query  css-width  css-height  height-in-frame
+  local url="http://127.0.0.1:$PORT/src/store-frame.html?src=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$2")&w=$3&h=$4&fit=$5"
+  "$CHROME" --headless --disable-gpu --no-sandbox --hide-scrollbars \
+    --window-size=1280,800 --virtual-time-budget=9000 \
+    --screenshot="$OUT/store/$1.png" "$url" >/dev/null 2>&1
+  echo "store/$1.png  1280x800"
+}
+
+framed 1-nag      "blocked.html?url=https%3A%2F%2Fwww.youtube.com%2F&domain=youtube.com&reason=growth" 620 993 700
+framed 2-settings "options.html" 580 900 700
+framed 3-popup    "popup.html?granted=all" 332 285 560
+
+"$CHROME" --headless --disable-gpu --no-sandbox --hide-scrollbars \
+  --window-size=440,280 --virtual-time-budget=5000 \
+  --screenshot="$OUT/store/promo-440x280.png" \
+  "http://127.0.0.1:$PORT/src/promo-tile.html" >/dev/null 2>&1
+echo "store/promo-440x280.png  440x280"

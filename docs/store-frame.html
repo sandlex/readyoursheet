@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>store frame</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; }
+      body {
+        background: #f2efe9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #shell {
+        background: #fbfaf8;
+        border-radius: 14px;
+        box-shadow: 0 18px 50px rgba(28, 27, 25, 0.16);
+        overflow: hidden;
+        transform-origin: center center;
+      }
+      iframe { display: block; border: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="shell"><iframe id="view"></iframe></div>
+    <script>
+      // ?src=<page>&w=<css width>&h=<css height>&fit=<target height in the frame>
+      const q = new URLSearchParams(location.search);
+      const w = Number(q.get('w'));
+      const h = Number(q.get('h'));
+      const fit = Number(q.get('fit') ?? 700);
+
+      const view = document.getElementById('view');
+      view.style.width = w + 'px';
+      view.style.height = h + 'px';
+      view.src = q.get('src');
+
+      const shell = document.getElementById('shell');
+      shell.style.transform = `scale(${fit / h})`;
+
+      // measure.js is injected into the framed page too; don't let its title win
+      view.addEventListener('load', () => {
+        setTimeout(() => (document.title = 'READY'), 600);
+      });
+    </script>
+  </body>
+</html>
