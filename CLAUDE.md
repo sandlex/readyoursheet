@@ -44,6 +44,8 @@ To diagnose rather than guess, the service worker console has
 state behind it. Note that the console on the `chrome://extensions` *page* is not
 the worker's; the card's blue `service worker` link opens the right one.
 
+Post-launch work is tracked in `TODO.md`.
+
 ## Design invariants
 
 Deliberate decisions, not accidents. Check before changing:
