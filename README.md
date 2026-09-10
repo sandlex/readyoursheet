@@ -272,6 +272,15 @@ promo tile are generated into `docs/store/` by `./docs/build.sh`.
 
 ---
 
+## Licence
+
+**None — all rights reserved.** The source is published so it can be read and
+audited, not reused. Deliberate rather than an oversight: an unlicensed repo
+keeps every option open, and can be licensed later if that changes.
+
+You're welcome to read it, and to run it yourself from a local clone. Copying,
+modifying or redistributing it needs permission — open an issue and ask.
+
 ## Development
 
 No build, no dependencies, no watch process. Edit a file, then hit the **reload**

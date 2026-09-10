@@ -64,7 +64,7 @@ own computers through your Google account, the same way your bookmarks do.
 Access is requested per site, one at a time, as you add them — the extension
 cannot see any site you have not explicitly approved.
 
-Open source: https://github.com/sandlex/readyoursheet
+Source available for inspection: https://github.com/sandlex/readyoursheet
 
 REQUIREMENTS
 
