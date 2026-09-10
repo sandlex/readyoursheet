@@ -137,6 +137,9 @@ The distinction worth remembering: **snoozed** opens the site, **saved links
 allowed** opens only the specific pages you'd saved. That's what lets you clear
 YouTube links out of your Reading List without unblocking YouTube.
 
+All three of these are **per-machine and never sync** — see
+[What syncs and what doesn't](#what-syncs-and-what-doesnt).
+
 ---
 
 ## Syncing between machines
@@ -175,7 +178,30 @@ replicated a change, the next page load already uses it. Change the blocklist on
 one laptop and the other picks it up within seconds if it's running, or on next
 browser start if it isn't.
 
-Three things deliberately do **not** sync:
+### What syncs and what doesn't
+
+The rule of thumb: **configuration follows you, permission to slip doesn't.**
+
+| | Syncs |
+| --- | --- |
+| Enabled toggle | ✅ |
+| Blocked sites list | ✅ |
+| Rolling window, net growth limit, unread ceiling | ✅ |
+| Delay and snooze length | ✅ |
+| **Snoozes** — a site opened via *Continue anyway* | ❌ per-machine |
+| **Pause 1h** | ❌ per-machine |
+| **Saved links allowed** — escape-hatch grants | ❌ per-machine |
+| Host access permissions | ❌ per-machine, see below |
+| Your counters (saved / read / net / unread) | ❌ recalculated per machine |
+
+**Snoozes and Pause not syncing is deliberate, not a bug.** They're the escape
+mechanism, and syncing an escape weakens the whole thing: click *Continue anyway*
+on your work laptop and YouTube would quietly open on the home laptop you aren't
+even sitting at — one countdown buying two bypasses. Your settings should follow
+you between machines; a decision to slip for the next 30 minutes belongs to the
+machine you made it on. Same reasoning for per-URL escape-hatch grants.
+
+The rest have their own reasons:
 
 - **Host permissions.** Chrome grants these per profile and there is no way to
   replicate them. The blocklist arrives, but the new sites have no access here
@@ -183,11 +209,9 @@ Three things deliberately do **not** sync:
   fires for it. This is silent by nature, so the extension makes it loud: the
   toolbar icon shows a **count badge**, and the popup offers a one-click
   **Grant access** for everything outstanding.
-- **Pause.** Pausing the laptop in front of you shouldn't unblock the one at
-  home, so `pausedUntil` stays local. Same for per-site snoozes.
-- **The ledger and snapshot.** These are derived from the Reading List, which
-  Chrome already syncs, so each machine rebuilds its own — and they'd blow past
-  sync's 8 KB-per-item quota anyway.
+- **The ledger and snapshot** behind your counters. These are derived from the
+  Reading List, which Chrome already syncs, so each machine rebuilds its own —
+  and they'd blow past sync's 8 KB-per-item quota anyway.
 
 That last one is why the numbers can differ slightly between machines. A fresh
 install seeds its ledger from the `creationTime` / `lastUpdateTime` of whatever

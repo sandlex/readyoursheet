@@ -53,6 +53,10 @@ Deliberate decisions, not accidents. Check before changing:
   `settings`. The ledger, snapshot, snoozes, allowances and `pausedUntil` stay
   in `local` — they're per-machine facts, and the ledger would blow the 8 KB
   sync quota anyway. `migrateSettings()` handles the pre-sync layout.
+  The principle is **configuration follows you, permission to slip doesn't**:
+  syncing a snooze would let one countdown buy a bypass on a machine you aren't
+  sitting at. Re-confirmed 2026-09-10 after it was mistaken for a sync bug — do
+  not "fix" it by syncing snoozes or pause unless explicitly asked.
 - **The ledger exists because the API has no history.** `chrome.readingList`
   exposes current state only, and most reading happens on a phone where this
   service worker is asleep. `reconcile()` diffs against a stored snapshot on
