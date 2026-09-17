@@ -20,7 +20,18 @@ shipped). Desktop only — Chrome on Android and iOS don't support extensions.
 
 ## Install
 
-There is no build step and no dependencies. You load the folder as-is.
+**[Add it from the Chrome Web Store](https://chromewebstore.google.com/detail/hadmajghlhbpcopcakkcggdmaejnohlc)** —
+one click, and it updates itself.
+
+The listing is unlisted rather than public, so it won't turn up in search. The
+link is the way in.
+
+Pin the icon if you want the numbers at a glance.
+
+<details>
+<summary>Running from source instead (for development)</summary>
+
+No build step and no dependencies — Chrome loads the folder as-is.
 
 1. Clone the repo:
    ```bash
@@ -30,10 +41,16 @@ There is no build step and no dependencies. You load the folder as-is.
 3. Turn on **Developer mode** (toggle, top right).
 4. Click **Load unpacked** and select the `readyoursheet` folder — the one
    containing `manifest.json`.
-5. The icon appears in the toolbar. Pin it if you want the numbers at a glance.
 
 Chrome loads unpacked extensions from that path on every launch, so **don't move
-or delete the folder** after installing.
+or delete the folder** afterwards.
+
+The `key` in `manifest.json` gives this build a fixed ID that differs from the
+published one, so Chrome treats the two as separate extensions with separate
+storage. **Disable the store version while the unpacked one is loaded**, or both
+will gate every navigation independently.
+
+</details>
 
 ### First-time setup
 

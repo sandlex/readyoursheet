@@ -33,11 +33,11 @@ own storage is a feature, not an accident.
 When developing later: disable the store version while the unpacked one is
 loaded, or both will fire.
 
-## 3. Update the repo Website field
+## 3. Update the repo Website field — done 2026-09-17
 
-- [ ] `gh repo edit --homepage https://chromewebstore.google.com/detail/hadmajghlhbpcopcakkcggdmaejnohlc`
-
-Only once the listing actually renders — while pending it shows as unavailable.
+- [x] Repo Website set to the listing
+- [x] README now leads with the store install; running from source moved into a
+      collapsed section for development
 
 ## 4. Publishing GitHub Action
 
