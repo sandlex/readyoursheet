@@ -5,24 +5,15 @@ than a keystroke.
 
 ---
 
-## 1. Decide what happens to `key` in the manifest — don't just delete it
+## 1. `key` in the manifest — decided 2026-09-17: keep it
 
-The instinct is to remove it now the store has assigned its own. That would be a
-small regression, so it's worth a deliberate choice between three options:
-
-| Option | Local unpacked ID | Consequence |
-| --- | --- | --- |
-| **Delete `key`** | derived from folder path | Different on every machine, so the dev build's `storage.sync` stops syncing — the exact bug we fixed by adding it |
-| **Keep our key** *(recommended)* | stable `ifkne…` | Dev build is stable and **separate** from the published one, so experiments can't corrupt real settings |
-| **Use the store's key** | same as published `hadmaj…` | Dev and published share an identity; unverified whether Chrome will load an unpacked copy whose ID matches an installed store extension |
-
-`package.sh` already strips `key` from every upload, so keeping it costs nothing
-and never reaches the store. Recommendation: **keep it**. A dev sandbox with its
-own storage is a feature, not an accident.
+Kept. The local unpacked build has a stable `ifkne…` ID, separate from the
+published `hadmaj…`, so dev experiments cannot corrupt real settings.
+`package.sh` strips it from every upload, so it never reaches the store.
 
 ## 2. Switch to the store build
 
-- [ ] Install from the store on both laptops
+- [x] Install from the store on both laptops — done 2026-09-17
 - [ ] **Remove the unpacked copies** — otherwise two extensions gate every
       navigation independently, each with its own blocklist and counters
 - [ ] Re-enter settings once on one machine. This is the final reset; the ID
@@ -53,18 +44,16 @@ Prerequisites, in order:
 
 Then the workflow itself:
 
-- [ ] Bump version, build with `package.sh`, upload, publish
-- [ ] Cut a GitHub Release with the changelog section as the body
-- [ ] **Scheduled keepalive** — a refresh token unused for 6 months dies, and
-      releases here will be infrequent enough to hit that
+- [x] Written — `.github/workflows/release.yml`, manual dispatch with a
+      patch/minor/major choice. Bumps, tests, packages, uploads, publishes,
+      then commits, tags and cuts a GitHub Release
+- [x] **Scheduled keepalive** — `.github/workflows/token-keepalive.yml`, monthly
+- [ ] Add the four repo secrets, then do one real run to prove it end to end
 
-## 5. Decide the version scheme before the first automated release
+## 5. Version scheme — decided 2026-09-17: semver
 
-Currently `0.1.0`. The plan was plain incrementing integers.
-
-`"1"` is a valid manifest version and sorts above `0.1.0` (compared
-component-wise, `1 > 0`), so switching works — but decide before wiring the
-workflow, since the bump step depends on the format.
+Staying on `MAJOR.MINOR.PATCH`. The release workflow takes a `patch`/`minor`/
+`major` choice and bumps accordingly.
 
 ---
 
@@ -92,4 +81,4 @@ The `m.youtube.com` vs `www.youtube.com` fix is only covered by tests so far.
   it clears the backlog just as well. A real fix means tracking whether the URL
   was open and focused for a while. Deliberately not built — see the soft-nag
   invariant in CLAUDE.md.
-- **`CHANGELOG.md` doesn't exist yet** and the release workflow wants one.
+

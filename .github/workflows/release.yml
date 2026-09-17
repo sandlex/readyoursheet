@@ -1,0 +1,66 @@
+name: Release
+
+# Manual on purpose — a release is a deliberate act, not a side effect of a push.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the version to bump
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests
+        run: |
+          google-chrome --version
+          CHROME=$(command -v google-chrome) ./test/run.sh
+
+      # Version and changelog are written to the working tree now but only
+      # committed after the store accepts the package, so a failed upload
+      # leaves no stray commit or tag behind.
+      - name: Bump version
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: python3 scripts/bump-version.py "$BUMP" >> "$GITHUB_OUTPUT"
+
+      - name: Roll the changelog
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: python3 scripts/roll-changelog.py "$VERSION" release-notes.md
+
+      - name: Build package
+        run: ./package.sh
+
+      - name: Upload and publish
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: scripts/cws-publish.sh "dist/read-your-sheet-${{ steps.bump.outputs.version }}.zip"
+
+      - name: Commit, tag and release
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json CHANGELOG.md
+          git commit -m "Release $VERSION"
+          git tag "v$VERSION"
+          git push origin HEAD --tags
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes-file release-notes.md \
+            "dist/read-your-sheet-$VERSION.zip"

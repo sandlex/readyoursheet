@@ -1,0 +1,32 @@
+name: Keep the store token alive
+
+# A Google refresh token that goes unused for six months stops working.
+# Releases here are infrequent enough to hit that, and the failure would only
+# surface when you actually wanted to ship. This exercises it monthly and fails
+# loudly — a red run in your inbox beats a broken release.
+on:
+  schedule:
+    - cron: "0 9 1 * *" # 09:00 UTC on the 1st
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exchange the refresh token
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          curl -sS https://oauth2.googleapis.com/token \
+            -d "client_id=$CWS_CLIENT_ID" \
+            -d "client_secret=$CWS_CLIENT_SECRET" \
+            -d "refresh_token=$CWS_REFRESH_TOKEN" \
+            -d grant_type=refresh_token \
+            -o token.json
+          python3 scripts/cws_response.py token token.json > /dev/null
+          echo "Refresh token still works."

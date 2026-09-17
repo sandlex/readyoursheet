@@ -337,6 +337,30 @@ Reloading matters differently depending on what you edited:
 - **Errors** — a red *Errors* button appears on the card if the manifest or the
   service worker fails to load.
 
+### Releasing
+
+```
+Actions → Release → Run workflow → patch | minor | major
+```
+
+The workflow runs the tests, bumps `manifest.json`, moves whatever is under
+**Unreleased** in `CHANGELOG.md` into a new version heading, builds the package,
+uploads and publishes it, then commits, tags and cuts a GitHub Release with
+those notes. It refuses to run if Unreleased is empty.
+
+Version and changelog are written before the upload but only committed after the
+store accepts it, so a failed upload leaves no stray commit or tag.
+
+Needs four repo secrets: `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`,
+`CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`. The extension ID is public and lives in
+the workflow.
+
+`scripts/cws-publish.sh` does the upload and publish, and runs identically
+locally — so a broken release can be debugged without pushing commits.
+
+A monthly workflow exercises the refresh token, because Google expires one that
+has gone unused for six months and you'd otherwise discover it mid-release.
+
 ### Tests
 
 ```bash
