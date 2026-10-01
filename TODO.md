@@ -34,20 +34,19 @@ loaded, or both will fire.
 
 Prerequisites, in order:
 
-- [ ] Google Cloud project → enable the Chrome Web Store API
-- [ ] OAuth client (Desktop app) → client ID + secret
-- [ ] **Set the OAuth consent screen to "In production"** — left in "Testing",
-      refresh tokens expire after 7 days and the workflow silently rots
-- [ ] One manual browser round-trip to mint the refresh token
-- [ ] Repo secrets: client ID, client secret, refresh token
-      (the extension ID is public, no secret needed)
+- [x] Google Cloud project → enable the Chrome Web Store API
+- [x] Service account created, JSON key downloaded, email authorised under
+      **Account** in the dev console — done 2026-10-01
+- [x] Switched from OAuth refresh tokens to the service account, so nothing
+      expires and the keepalive workflow is gone
+- [ ] Add the two repo secrets: `CWS_SERVICE_ACCOUNT_KEY` (the whole JSON) and
+      `CWS_PUBLISHER_ID` (dev console → Account)
 
 Then the workflow itself:
 
 - [x] Written — `.github/workflows/release.yml`, manual dispatch with a
       patch/minor/major choice. Bumps, tests, packages, uploads, publishes,
       then commits, tags and cuts a GitHub Release
-- [x] **Scheduled keepalive** — `.github/workflows/token-keepalive.yml`, monthly
 - [ ] Add the four repo secrets, then do one real run to prove it end to end
 
 ## 5. Version scheme — decided 2026-09-17: semver

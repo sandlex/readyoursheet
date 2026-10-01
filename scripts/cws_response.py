@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Interpret a Chrome Web Store API response and fail loudly on trouble.
 
-    scripts/cws_response.py token|upload|publish <response.json>
+    scripts/cws_response.py upload|publish <response.json>
 
-`token` prints the access token on success; the others print a summary. Any
-failure exits non-zero with an explanation rather than letting a release
-continue on a response that only looks fine.
+Any failure exits non-zero with an explanation rather than letting a release
+continue on a response that only looks fine. Token minting lives in
+cws_token.py.
 """
 import json
 import pathlib
@@ -28,35 +28,6 @@ def load(path: str) -> dict:
         return json.loads(raw)
     except json.JSONDecodeError:
         sys.exit(f"store returned something that isn't JSON:\n{raw[:500]}")
-
-
-def check_token(data: dict) -> None:
-    if "access_token" in data:
-        print(data["access_token"])
-        return
-
-    error = data.get("error", "")
-    message = f"token request failed: {error} {data.get('error_description', '')}".strip()
-
-    # Point at the likely cause rather than listing every possibility. A
-    # missing parameter means the credentials were never supplied; a rejected
-    # grant means they were, and the token is no longer good.
-    if error == "invalid_request":
-        hint = (
-            "Looks like the credentials are empty. Add CWS_CLIENT_ID, "
-            "CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN and CWS_PUBLISHER_ID as repo "
-            "secrets (Settings -> Secrets and variables -> Actions)."
-        )
-    elif error == "invalid_grant":
-        hint = (
-            "The refresh token was rejected. If the OAuth consent screen is "
-            "still in Testing, tokens expire after 7 days — set it to In "
-            "production and mint a new one."
-        )
-    else:
-        hint = "Check the OAuth client and refresh token."
-
-    sys.exit(f"{message}\n{hint}")
 
 
 def check_upload(data: dict) -> None:
@@ -83,12 +54,12 @@ def check_publish(data: dict) -> None:
     print("  " + ", ".join(statuses))
 
 
-CHECKS = {"token": check_token, "upload": check_upload, "publish": check_publish}
+CHECKS = {"upload": check_upload, "publish": check_publish}
 
 
 def main() -> None:
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:
-        sys.exit("usage: cws_response.py token|upload|publish <response.json>")
+        sys.exit("usage: cws_response.py upload|publish <response.json>")
     CHECKS[sys.argv[1]](load(sys.argv[2]))
 
 

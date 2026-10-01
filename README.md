@@ -351,15 +351,33 @@ those notes. It refuses to run if Unreleased is empty.
 Version and changelog are written before the upload but only committed after the
 store accepts it, so a failed upload leaves no stray commit or tag.
 
-Needs four repo secrets: `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`,
-`CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`. The extension ID is public and lives in
-the workflow.
+Needs two repo secrets:
 
-`scripts/cws-publish.sh` does the upload and publish, and runs identically
-locally — so a broken release can be debugged without pushing commits.
+| Secret | From |
+| --- | --- |
+| `CWS_SERVICE_ACCOUNT_KEY` | The whole service account JSON key file |
+| `CWS_PUBLISHER_ID` | Dev console → Account |
 
-A monthly workflow exercises the refresh token, because Google expires one that
-has gone unused for six months and you'd otherwise discover it mid-release.
+The extension ID is public and lives in the workflow.
+
+Authentication is a **service account**, not an OAuth refresh token. The
+workflow signs a short-lived JWT with the key and exchanges it for an access
+token. Nothing expires, so there's no consent screen, no browser flow, and no
+keepalive job — refresh tokens die after 7 days in Testing mode and 6 months
+unused, which is a trap not worth living with.
+
+`scripts/cws-publish.sh` does the upload and publish and runs identically
+locally, so a broken release can be debugged without pushing commits:
+
+```bash
+CWS_SERVICE_ACCOUNT_KEY_FILE=~/path/to/key.json \
+CWS_PUBLISHER_ID=... \
+./scripts/cws-publish.sh dist/read-your-sheet-0.1.1.zip
+```
+
+`scripts/cws_token.py <key.json> --dry-run` prints the signed JWT without
+exchanging it, which is the quickest way to tell a signing problem from an
+authorisation one.
 
 ### Tests
 

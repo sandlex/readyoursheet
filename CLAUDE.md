@@ -11,7 +11,14 @@ product. See README.md for install and usage.
 ./docs/build.sh      # regenerate README screenshots from staged data
 ./icons/build.sh     # re-rasterize icon PNGs after editing icons/icon.svg
 ./package.sh         # build dist/*.zip for Chrome Web Store upload
+./scripts/cws-publish.sh dist/*.zip   # upload + publish (same code CI runs)
 ```
+
+Store auth is a **service account**, not OAuth. `scripts/cws_token.py` signs a
+JWT with `openssl` — deliberately no crypto dependency — and exchanges it for
+an access token. Two secrets: `CWS_SERVICE_ACCOUNT_KEY`, `CWS_PUBLISHER_ID`.
+Don't reintroduce refresh tokens: they expire after 7 days in Testing mode and
+6 months unused, which cost a red CI run before the switch.
 
 `package.sh` strips `key` from the packaged manifest — the store rejects a first
 upload containing one — and refuses to produce a zip if dev files, a `.pem` or a
