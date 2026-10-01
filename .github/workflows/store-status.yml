@@ -1,0 +1,27 @@
+name: Store status
+
+# Read-only. Reports the published item's status, and in doing so proves the
+# credentials still work — key valid, API enabled, service account authorised
+# on the publisher, both IDs correct. Nothing is uploaded or changed.
+#
+# Run it after changing secrets, or to check whether a submission has cleared
+# review without opening the dashboard.
+on:
+  workflow_dispatch:
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch item status
+        env:
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: |
+          if [ -z "$CWS_SERVICE_ACCOUNT_KEY" ] || [ -z "$CWS_PUBLISHER_ID" ]; then
+            echo "::error::Store credentials are not configured. Add CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID under Settings -> Secrets and variables -> Actions." >&2
+            exit 1
+          fi
+          scripts/cws-status.sh
