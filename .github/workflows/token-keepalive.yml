@@ -13,7 +13,7 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Exchange the refresh token
         env:
@@ -22,6 +22,12 @@ jobs:
           CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
         run: |
           set -euo pipefail
+
+          if [ -z "$CWS_CLIENT_ID" ] || [ -z "$CWS_CLIENT_SECRET" ] || [ -z "$CWS_REFRESH_TOKEN" ]; then
+            echo "::error::Store credentials are not configured. Add CWS_CLIENT_ID, CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN and CWS_PUBLISHER_ID under Settings -> Secrets and variables -> Actions. Until then the release workflow cannot publish." >&2
+            exit 1
+          fi
+
           curl -sS https://oauth2.googleapis.com/token \
             -d "client_id=$CWS_CLIENT_ID" \
             -d "client_secret=$CWS_CLIENT_SECRET" \

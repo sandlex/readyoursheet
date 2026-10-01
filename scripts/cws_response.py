@@ -31,14 +31,32 @@ def load(path: str) -> dict:
 
 
 def check_token(data: dict) -> None:
-    if "access_token" not in data:
-        sys.exit(
-            "token request failed: "
-            f"{data.get('error')} {data.get('error_description', '')}\n"
-            "If the OAuth consent screen is still in Testing, refresh tokens "
-            "expire after 7 days. Set it to In production and mint a new one."
+    if "access_token" in data:
+        print(data["access_token"])
+        return
+
+    error = data.get("error", "")
+    message = f"token request failed: {error} {data.get('error_description', '')}".strip()
+
+    # Point at the likely cause rather than listing every possibility. A
+    # missing parameter means the credentials were never supplied; a rejected
+    # grant means they were, and the token is no longer good.
+    if error == "invalid_request":
+        hint = (
+            "Looks like the credentials are empty. Add CWS_CLIENT_ID, "
+            "CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN and CWS_PUBLISHER_ID as repo "
+            "secrets (Settings -> Secrets and variables -> Actions)."
         )
-    print(data["access_token"])
+    elif error == "invalid_grant":
+        hint = (
+            "The refresh token was rejected. If the OAuth consent screen is "
+            "still in Testing, tokens expire after 7 days — set it to In "
+            "production and mint a new one."
+        )
+    else:
+        hint = "Check the OAuth client and refresh token."
+
+    sys.exit(f"{message}\n{hint}")
 
 
 def check_upload(data: dict) -> None:
