@@ -379,6 +379,11 @@ CWS_PUBLISHER_ID=... \
 exchanging it, which is the quickest way to tell a signing problem from an
 authorisation one.
 
+`scripts/cws-status.sh` is read-only and changes nothing. It reports whether a
+submission has cleared review, and doubles as a credentials check — if it
+succeeds, the key, the API, the publisher authorisation and both IDs are all
+correct.
+
 ### Tests
 
 ```bash

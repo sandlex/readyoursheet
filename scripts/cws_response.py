@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Interpret a Chrome Web Store API response and fail loudly on trouble.
 
-    scripts/cws_response.py upload|publish <response.json>
+    scripts/cws_response.py upload|publish|status <response.json>
 
 Any failure exits non-zero with an explanation rather than letting a release
 continue on a response that only looks fine. Token minting lives in
@@ -54,12 +54,28 @@ def check_publish(data: dict) -> None:
     print("  " + ", ".join(statuses))
 
 
-CHECKS = {"upload": check_upload, "publish": check_publish}
+def check_status(data: dict) -> None:
+    """fetchStatus is informational — surface it, don't judge it."""
+    if "error" in data:
+        err = data["error"]
+        message = err.get("message", err) if isinstance(err, dict) else err
+        hint = ""
+        if "PERMISSION_DENIED" in str(data) or "403" in str(err):
+            hint = (
+                "\n  The service account may not be authorised. Add its "
+                "client_email under Account in the developer dashboard, and "
+                "check CWS_PUBLISHER_ID."
+            )
+        sys.exit(f"  {message}{hint}")
+    print(json.dumps(data, indent=2))
+
+
+CHECKS = {"upload": check_upload, "publish": check_publish, "status": check_status}
 
 
 def main() -> None:
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:
-        sys.exit("usage: cws_response.py upload|publish <response.json>")
+        sys.exit("usage: cws_response.py upload|publish|status <response.json>")
     CHECKS[sys.argv[1]](load(sys.argv[2]))
 
 

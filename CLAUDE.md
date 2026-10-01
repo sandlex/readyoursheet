@@ -12,6 +12,7 @@ product. See README.md for install and usage.
 ./icons/build.sh     # re-rasterize icon PNGs after editing icons/icon.svg
 ./package.sh         # build dist/*.zip for Chrome Web Store upload
 ./scripts/cws-publish.sh dist/*.zip   # upload + publish (same code CI runs)
+./scripts/cws-status.sh               # read-only: has review cleared? are creds good?
 ```
 
 Store auth is a **service account**, not OAuth. `scripts/cws_token.py` signs a
