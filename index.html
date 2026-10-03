@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Read Your Sheet — a Chrome extension</title>
+    <meta
+      name="description"
+      content="A Chrome extension that soft-blocks distracting sites while your Reading List is growing faster than you read it."
+    />
+    <link rel="icon" href="icons/icon128.png" />
+
+    <meta property="og:title" content="Read Your Sheet" />
+    <meta
+      property="og:description"
+      content="Soft-blocks distracting sites while your Reading List is growing faster than you read it."
+    />
+    <meta property="og:image" content="docs/store/promo-440x280.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <style>
+      /* Same palette as the extension itself. */
+      :root {
+        --bg: #fbfaf8;
+        --panel: #ffffff;
+        --ink: #1c1b19;
+        --muted: #6d6a64;
+        --line: #e4e1db;
+        --accent: #b8420f;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171614;
+          --panel: #201f1c;
+          --ink: #eeece7;
+          --muted: #9c988f;
+          --line: #33312d;
+          --accent: #e8763f;
+          color-scheme: dark;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 0 24px 72px;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main { max-width: 640px; margin: 0 auto; }
+
+      header { display: flex; align-items: center; gap: 16px; padding: 64px 0 20px; }
+      header img { width: 64px; height: 64px; }
+      h1 { font-size: 34px; margin: 0; letter-spacing: -0.025em; }
+
+      p { margin: 0 0 18px; }
+      .lede { font-size: 19px; color: var(--muted); }
+
+      .cta {
+        display: inline-block;
+        margin: 14px 0 6px;
+        padding: 13px 24px;
+        background: var(--accent);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .cta:hover { filter: brightness(1.08); }
+      .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+      .cta.secondary {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      .cta.secondary:hover { border-color: var(--muted); filter: none; }
+      .note { font-size: 14px; color: var(--muted); }
+
+      h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 44px 0 14px;
+      }
+
+      /* Full-bleed horizontal strip: keeps each shot small and legible
+         instead of stretching one to the page width. */
+      .shots {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 4px 24px 18px;
+        margin: 0 calc(50% - 50vw);
+        scrollbar-width: thin;
+      }
+      .shots::before, .shots::after { content: ""; flex: 0 0 max(0px, calc(50vw - 320px - 24px)); }
+      .shots a {
+        flex: 0 0 auto;
+        scroll-snap-align: center;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--panel);
+        line-height: 0;
+      }
+      .shots img {
+        display: block;
+        width: 400px;
+        max-width: 76vw;
+        height: 460px;
+        object-fit: cover;
+        object-position: top;
+      }
+      .shots figcaption { display: none; }
+
+      .captions { display: flex; gap: 16px; font-size: 14px; color: var(--muted); }
+
+      footer {
+        margin-top: 52px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      footer a { color: var(--accent); }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <header>
+        <img src="icons/icon128.png" alt="" />
+        <h1>Read Your Sheet</h1>
+      </header>
+
+      <p class="lede">
+        A Chrome extension that soft-blocks distracting sites while your Reading
+        List is growing faster than you read it.
+      </p>
+
+      <p>
+        It is deliberately <strong>not</strong> a hard blocker. When you hit a
+        blocked site it shows a nag screen with your actual numbers, makes you
+        sit for a few seconds, offers you something from your own Reading List
+        instead — and then lets you through if you still want to go. The point
+        is friction, not a lock. Sometimes you genuinely need YouTube at work.
+      </p>
+
+      <p class="actions">
+        <a
+          class="cta"
+          href="https://chromewebstore.google.com/detail/hadmajghlhbpcopcakkcggdmaejnohlc"
+          >Add to Chrome</a
+        >
+        <a class="cta secondary" href="https://github.com/sandlex/readyoursheet"
+          >View on GitHub</a
+        >
+      </p>
+      <p class="note">Free. Chrome 120 or newer, desktop.</p>
+
+      <h2>What it looks like</h2>
+    </main>
+
+    <div class="shots">
+      <a href="docs/nag-screen.png">
+        <img
+          src="docs/nag-screen.png"
+          alt="The nag screen: 12 saved and 4 read over the last 7 days, saved YouTube links from the blocked site, and a Continue anyway button counting down"
+          loading="lazy"
+        />
+      </a>
+      <a href="docs/settings.png">
+        <img
+          src="docs/settings.png"
+          alt="Settings: the blocked sites list with per-site state, and the thresholds that decide when blocking starts"
+          loading="lazy"
+        />
+      </a>
+      <a href="docs/popup.png">
+        <img
+          src="docs/popup.png"
+          alt="The toolbar popup showing saved, read, net growth and unread counts"
+          loading="lazy"
+        />
+      </a>
+    </div>
+
+    <main>
+      <p class="note">
+        Scroll sideways for more. Click any shot to see it full size.
+        Screenshots use example data.
+      </p>
+
+      <footer>
+        <a href="https://github.com/sandlex/readyoursheet">Source on GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="https://github.com/sandlex/readyoursheet/blob/main/PRIVACY.md"
+          >Privacy</a
+        >
+        &nbsp;·&nbsp;
+        <a href="https://github.com/sandlex/readyoursheet/issues">Report a problem</a>
+        <p style="margin-top: 14px">
+          No account, no servers, no analytics, no network requests at all.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
